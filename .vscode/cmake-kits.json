@@ -1,0 +1,12 @@
+[
+    {
+        "name": "Windows (x86_64)",
+        "toolchainFile": "./cmake/mingw-w64-x86_64.cmake",
+        "cmakeSettings": {
+            "CMAKE_POLICY_VERSION_MINIMUM": 3.5,
+            "CMAKE_BUILD_TYPE": "Debug",
+            "PROFILING": true,
+            "COVERAGE": true
+        }
+    }
+]
