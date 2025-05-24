@@ -9,6 +9,10 @@
 #include <Logging.h>
 #include <SDL_stdinc.h>
 
+const int W_WIDTH = 800;
+const int W_HEIGHT = 600;
+const std::string W_TITLE = "REngine";
+
 int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         FATAL("SDL could not initialize! SDL_Error: " << SDL_GetError());
@@ -20,11 +24,11 @@ int main(int argc, char* argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     SDL_Window* sdl_window = SDL_CreateWindow(
-        "REngine",
+        W_TITLE.c_str(),
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        800,
-        600,
+        W_WIDTH,
+        W_HEIGHT,
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
 
@@ -42,9 +46,11 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    REngine::Renderer* re_window = new REngine::Renderer("REngine", 800, 600);
+    REngine::Renderer* re_window = new REngine::Renderer(W_WIDTH, W_HEIGHT);
     if (re_window && re_window->Init(SDL_GL_GetProcAddress) != 0) {
-        FATAL("Couldn't initialize window");
+        FATAL("Couldn't initialize renderer");
+        SDL_DestroyWindow(sdl_window);
+        SDL_Quit();
         delete re_window;
         return -1;
     }
@@ -57,6 +63,8 @@ int main(int argc, char* argv[]) {
     if (!REngine::SceneLoader::load("scene.rem", scene)) {
         if (!REngine::SceneLoader::load("../scene.rem", scene)) {
             FATAL("Couldn't load the scene");
+            SDL_DestroyWindow(sdl_window);
+            SDL_Quit();
             delete re_window;
             return -1;
         }
@@ -77,6 +85,8 @@ int main(int argc, char* argv[]) {
         if (!std::filesystem::exists("../shaders/vertex.glsl") || !std::filesystem::exists("../shaders/fragment.glsl")) {
             DEBUG("../shaders/ not found");
             FATAL("Shaders not found!");
+            SDL_DestroyWindow(sdl_window);
+            SDL_Quit();
             delete re_window;
             return -1;
         }
@@ -142,10 +152,11 @@ int main(int argc, char* argv[]) {
         }
         frames++;
         previousTime = currentTime;
-        re_window->Draw(deltaTime);
+        re_window->Draw(currentTime);
         SDL_GL_SwapWindow(sdl_window);
     }
-
+    SDL_DestroyWindow(sdl_window);
+    SDL_Quit();
     delete re_window;
     DEBUG("Goodnight");
 
