@@ -15,8 +15,20 @@ const std::string W_TITLE = "REngine";
 
 int main(int argc, char* argv[]) {
     std::string scenePath = "scene.rem";
+    char* vertexPath = NULL;
+    char* fragmentPath = NULL;
     if (argc > 1) {
-        scenePath = argv[1];
+        for (int i = 0; i < argc - 1; i++) {
+            if (std::string(argv[i]) == "-scene") {
+                scenePath = argv[i + 1];
+            }
+            else if (std::string(argv[i]) == "-v") {
+                vertexPath = argv[i + 1];
+            }
+            else if (std::string(argv[i]) == "-f") {
+                fragmentPath = argv[i + 1];
+            }
+        }
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -60,7 +72,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    re_window->shader = new REngine::Shader();
+    re_window->shader = new REngine::Shader(vertexPath, fragmentPath);
 
     if (SDL_GL_SetSwapInterval(1) != 0) {
         ERROR("Couldn't set up Vsync: " << SDL_GetError());

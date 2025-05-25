@@ -5,21 +5,24 @@ in vec3 FragPos;
 
 out vec4 FragColor;
 
-uniform sampler2D textureSampler;
-uniform bool useTexture;
-uniform bool distort;
-uniform float u_time;
-uniform vec3 u_light_color;
-uniform vec3 u_light_position;
-uniform vec3 u_camera_position;
-struct Material {
+struct Light {
+    vec3 position;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+};
+
+struct Material {
+    sampler2D diffuse;
+    sampler2D specular;
     float shininess;
 };
-uniform Material material;
 
+uniform bool distort;
+uniform float u_time;
+uniform vec3 u_camera_position;
+uniform Light light;
+uniform Material material;
 
 vec3 random3(vec3 p) {
     return fract(
@@ -66,31 +69,28 @@ void main() {
         discard;
         return;
     }
-    vec4 texColor;
-    if (useTexture) {
-        if (distort) {
-            vec3 noise_coord = vec3(TexCoord * 5.0, u_time * 0.1);
-            float noise_value = perlin(noise_coord) * 0.1;
-            vec2 distorted_uv = TexCoord + vec2(noise_value);
-            texColor = texture(textureSampler, distorted_uv);
-        } else {
-            texColor = texture(textureSampler, TexCoord);
-        }
+
+    vec2 ourUV;
+
+    if (distort) {
+        vec3 noise_coord = vec3(TexCoord * 5.0, u_time * 0.1);
+        float noise_value = perlin(noise_coord) * 0.1;
+        ourUV = TexCoord + vec2(noise_value);
     } else {
-        texColor = vec4(1.0, 1.0, 1.0, 1.0);
+        ourUV = TexCoord;
     }
 
-    vec3 ambient = u_light_color * material.ambient;
+    vec3 ambient = light.ambient * vec3(texture(material.diffuse, ourUV));
 
     vec3 norm = normalize(Normal);
-    vec3 light_direction = normalize(u_light_position - FragPos);
+    vec3 light_direction = normalize(light.position - FragPos);
     float diff = max(dot(norm, light_direction), 0.0);
-    vec3 diffuse = u_light_color * (diff * material.diffuse);
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, ourUV));
 
     vec3 viewDir = normalize(u_camera_position - FragPos);
     vec3 reflectDir = reflect(-light_direction, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = u_light_color * (spec * material.specular);
+    vec3 specular = light.specular * (spec * vec3(texture(material.specular, ourUV)));
 
-    FragColor = texColor * vec4(ambient + diffuse + specular, 1.0);
+    FragColor = vec4(ambient + diffuse + specular, 1.0);
 }
