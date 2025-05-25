@@ -1,6 +1,6 @@
 [RENGINE MAP FORMAT V1.0]
 /// Camera, x, y, z, rx, ry, rz, FOV ///
-camera,0,0,2,0,180,0,45
+camera,0,0,2,0,-90,0,45
 
 /// Lighting, sky r, g, b, light r, g, b, light x, y, z ///
 lighting,0.2,0.2,0.2,1,1,1,10,10,20

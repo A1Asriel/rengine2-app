@@ -74,15 +74,7 @@ int main(int argc, char* argv[]) {
         delete re_window;
         return -1;
     }
-    re_window->scene = scene;
-    re_window->camera.position = scene.camera.position;
-    re_window->camera.front = glm::vec3(sin(glm::radians(scene.camera.rotation.y)),
-                                        sin(glm::radians(scene.camera.rotation.x)),
-                                        cos(glm::radians(scene.camera.rotation.y)));
-    re_window->camera.up = glm::vec3(sin(glm::radians(scene.camera.rotation.z)),
-                                     cos(glm::radians(scene.camera.rotation.z)),
-                                     0);
-    re_window->camera.fov = scene.camera.fov;
+    re_window->setScene(&scene);
 
     // REngine::Shader* shader;
     // if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
@@ -123,7 +115,9 @@ int main(int argc, char* argv[]) {
                 break;
             case SDL_MOUSEMOTION:
                 if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK) {
-                    re_window->camera.rotateRelative(e.motion.xrel, e.motion.yrel, 0);
+                    float dx = e.motion.xrel / 5.0f;
+                    float dy = e.motion.yrel / 5.0f;
+                    re_window->camera.rotateRelative(dx, dy, 0);
                 }
                 break;
             default:
