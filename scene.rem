@@ -2,6 +2,9 @@
 /// Camera, x, y, z, rx, ry, rz, FOV ///
 camera,0,0,2,0,180,0,60
 
+/// Lighting, r, g, b, x, y, z, ambient strength ///
+lighting,1,1,1,-1,2,2,0.6
+
 /// Тип объекта (cube/sphere), x, y, z, rx, ry, rz, sx, sy, sz, искажение (true/false), путь к текстуре (опционально) ///
 
 // Пол

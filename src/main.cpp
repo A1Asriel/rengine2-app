@@ -55,13 +55,15 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    re_window->shader = new REngine::Shader();
+
     if (SDL_GL_SetSwapInterval(1) != 0) {
         ERROR("Couldn't set up Vsync: " << SDL_GetError());
     }
 
-    REngine::Scene* scene = new REngine::Scene();
-    if (!REngine::SceneLoader::load("scene.rem", scene)) {
-        if (!REngine::SceneLoader::load("../scene.rem", scene)) {
+    REngine::Scene scene;
+    if (!REngine::SceneLoader::load("scene.rem", &scene)) {
+        if (!REngine::SceneLoader::load("../scene.rem", &scene)) {
             FATAL("Couldn't load the scene");
             SDL_DestroyWindow(sdl_window);
             SDL_Quit();
@@ -70,32 +72,30 @@ int main(int argc, char* argv[]) {
         }
     }
     re_window->scene = scene;
-    re_window->camera.position = scene->camera.position;
-    re_window->camera.front = glm::vec3(sin(glm::radians(scene->camera.rotation.y)),
-                                        sin(glm::radians(scene->camera.rotation.x)),
-                                        cos(glm::radians(scene->camera.rotation.y)));
-    re_window->camera.up = glm::vec3(sin(glm::radians(scene->camera.rotation.z)),
-                                     cos(glm::radians(scene->camera.rotation.z)),
+    re_window->camera.position = scene.camera.position;
+    re_window->camera.front = glm::vec3(sin(glm::radians(scene.camera.rotation.y)),
+                                        sin(glm::radians(scene.camera.rotation.x)),
+                                        cos(glm::radians(scene.camera.rotation.y)));
+    re_window->camera.up = glm::vec3(sin(glm::radians(scene.camera.rotation.z)),
+                                     cos(glm::radians(scene.camera.rotation.z)),
                                      0);
-    re_window->camera.fov = scene->camera.fov;
+    re_window->camera.fov = scene.camera.fov;
 
-    REngine::Shader* shader;
-    if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
-        DEBUG("shaders/ not found");
-        if (!std::filesystem::exists("../shaders/vertex.glsl") || !std::filesystem::exists("../shaders/fragment.glsl")) {
-            DEBUG("../shaders/ not found");
-            FATAL("Shaders not found!");
-            SDL_DestroyWindow(sdl_window);
-            SDL_Quit();
-            delete re_window;
-            return -1;
-        }
-        shader = new REngine::Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl");
-    } else {
-        shader = new REngine::Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
-    }
-
-    re_window->shader = shader;
+    // REngine::Shader* shader;
+    // if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
+    //     DEBUG("shaders/ not found");
+    //     if (!std::filesystem::exists("../shaders/vertex.glsl") || !std::filesystem::exists("../shaders/fragment.glsl")) {
+    //         DEBUG("../shaders/ not found");
+    //         FATAL("Shaders not found!");
+    //         SDL_DestroyWindow(sdl_window);
+    //         SDL_Quit();
+    //         delete re_window;
+    //         return -1;
+    //     }
+    //     shader = new REngine::Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl");
+    // } else {
+    //     shader = new REngine::Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
+    // }
 
     bool quit = false;
     SDL_Event e;

@@ -1,12 +1,19 @@
 #version 330 core
-in vec3 ourColor;
+in vec3 Normal;
 in vec2 TexCoord;
+in vec3 FragPos;
+
 out vec4 FragColor;
 
 uniform sampler2D textureSampler;
 uniform bool useTexture;
 uniform bool distort;
 uniform float u_time;
+uniform vec3 u_light_color;
+uniform vec3 u_light_position;
+uniform float u_ambient_strength;
+uniform vec3 cameraPos;
+
 
 vec3 random3(vec3 p) {
     return fract(
@@ -64,7 +71,21 @@ void main() {
             texColor = texture(textureSampler, TexCoord);
         }
     } else {
-        texColor = vec4(ourColor, 1.0);
+        texColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
-    FragColor = texColor;
+
+    vec3 ambient = u_ambient_strength * u_light_color;
+
+    vec3 norm = normalize(Normal);
+    vec3 light_direction = normalize(u_light_position - FragPos);
+    float diff = max(dot(norm, light_direction), 0.0);
+    vec3 diffuse = diff * u_light_color;
+
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(cameraPos - FragPos);
+    vec3 reflectDir = reflect(-light_direction, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * u_light_color;
+
+    FragColor = texColor * vec4(ambient + diffuse + specular, 1.0);
 }
