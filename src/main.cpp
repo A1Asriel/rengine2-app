@@ -14,6 +14,11 @@ const int W_HEIGHT = 600;
 const std::string W_TITLE = "REngine";
 
 int main(int argc, char* argv[]) {
+    std::string scenePath = "scene.rem";
+    if (argc > 1) {
+        scenePath = argv[1];
+    }
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         FATAL("SDL could not initialize! SDL_Error: " << SDL_GetError());
         return -1;
@@ -62,14 +67,12 @@ int main(int argc, char* argv[]) {
     }
 
     REngine::Scene scene;
-    if (!REngine::SceneLoader::load("scene.rem", &scene)) {
-        if (!REngine::SceneLoader::load("../scene.rem", &scene)) {
-            FATAL("Couldn't load the scene");
-            SDL_DestroyWindow(sdl_window);
-            SDL_Quit();
-            delete re_window;
-            return -1;
-        }
+    if (!REngine::SceneLoader::load(scenePath, &scene)) {
+        FATAL("Couldn't load the scene");
+        SDL_DestroyWindow(sdl_window);
+        SDL_Quit();
+        delete re_window;
+        return -1;
     }
     re_window->scene = scene;
     re_window->camera.position = scene.camera.position;
