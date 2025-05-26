@@ -13,6 +13,13 @@ const int W_WIDTH = 800;
 const int W_HEIGHT = 600;
 const std::string W_TITLE = "REngine";
 
+void destroyApp(SDL_Window* window, SDL_GLContext context, REngine::Renderer* renderer) {
+    SDL_GL_DeleteContext(context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    delete renderer;
+}
+
 int main(int argc, char* argv[]) {
     std::string scenePath = "scene.rem";
     char* vertexPath = NULL;
@@ -40,7 +47,7 @@ int main(int argc, char* argv[]) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_Window* sdl_window = SDL_CreateWindow(
+    SDL_Window* window = SDL_CreateWindow(
         W_TITLE.c_str(),
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
@@ -49,30 +56,27 @@ int main(int argc, char* argv[]) {
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
 
-    if (!sdl_window) {
+    if (!window) {
         FATAL("Window could not be created! SDL_Error: " << SDL_GetError());
-        SDL_Quit();
+        destroyApp(window, NULL, NULL);
         return -1;
     }
 
-    SDL_GLContext gl_context = SDL_GL_CreateContext(sdl_window);
-    if (!gl_context) {
+    SDL_GLContext glContext = SDL_GL_CreateContext(window);
+    if (!glContext) {
         FATAL("OpenGL context could not be created! SDL_Error: " << SDL_GetError());
-        SDL_DestroyWindow(sdl_window);
-        SDL_Quit();
+        destroyApp(window, glContext, NULL);
         return -1;
     }
 
-    REngine::Renderer* re_window = new REngine::Renderer(W_WIDTH, W_HEIGHT);
-    if (re_window && re_window->Init(SDL_GL_GetProcAddress) != 0) {
+    REngine::Renderer* renderer = new REngine::Renderer(W_WIDTH, W_HEIGHT);
+    if (renderer && renderer->Init(SDL_GL_GetProcAddress) != 0) {
         FATAL("Couldn't initialize renderer");
-        SDL_DestroyWindow(sdl_window);
-        SDL_Quit();
-        delete re_window;
+        destroyApp(window, glContext, renderer);
         return -1;
     }
 
-    re_window->shader = new REngine::Shader(vertexPath, fragmentPath);
+    renderer->shader = new REngine::Shader(vertexPath, fragmentPath);
 
     if (SDL_GL_SetSwapInterval(1) != 0) {
         ERROR("Couldn't set up Vsync: " << SDL_GetError());
@@ -81,35 +85,17 @@ int main(int argc, char* argv[]) {
     REngine::Scene scene;
     if (!REngine::SceneLoader::load(scenePath, &scene)) {
         FATAL("Couldn't load the scene");
-        SDL_DestroyWindow(sdl_window);
-        SDL_Quit();
-        delete re_window;
+        destroyApp(window, glContext, renderer);
         return -1;
     }
-    re_window->setScene(&scene);
+    renderer->setScene(&scene);
 
-    // REngine::Shader* shader;
-    // if (!std::filesystem::exists("shaders/vertex.glsl") || !std::filesystem::exists("shaders/fragment.glsl")) {
-    //     DEBUG("shaders/ not found");
-    //     if (!std::filesystem::exists("../shaders/vertex.glsl") || !std::filesystem::exists("../shaders/fragment.glsl")) {
-    //         DEBUG("../shaders/ not found");
-    //         FATAL("Shaders not found!");
-    //         SDL_DestroyWindow(sdl_window);
-    //         SDL_Quit();
-    //         delete re_window;
-    //         return -1;
-    //     }
-    //     shader = new REngine::Shader("../shaders/vertex.glsl", "../shaders/fragment.glsl");
-    // } else {
-    //     shader = new REngine::Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
-    // }
-
-    bool quit = false;
+    bool quit = false;  // Флаг выхода из цикла
     SDL_Event e;
 
-    Uint32 previousTime = SDL_GetTicks();
-    double deltaTime = 0.0f;
-    int frames = 0;
+    Uint32 previousTime = SDL_GetTicks();  // Последнее время в миллисекундах
+    double deltaTime = 0.0f;  // Время с последнего кадра в секундах
+    int frames = 0;  // Количество кадров за секунду
 
     while (!quit) {
         // Проверка ввода
@@ -127,21 +113,20 @@ int main(int argc, char* argv[]) {
                 break;
             case SDL_MOUSEMOTION:
                 if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_RMASK) {
-                    float dx = e.motion.xrel / 5.0f;
-                    float dy = e.motion.yrel / 5.0f;
-                    re_window->camera.rotateRelative(dx, dy, 0);
+                    float dx = e.motion.xrel / 5.0f;  // Вращение камеры по X в градусах
+                    float dy = e.motion.yrel / 5.0f;  // Вращение камеры по Y в градусах
+                    renderer->camera.rotateRelative(dx, dy, 0);
                 }
                 break;
             default:
                 break;
             }
         }
-        // Вычислить дельту по времени
-        Uint32 currentTime = SDL_GetTicks();
+
+        Uint32 currentTime = SDL_GetTicks();  // Текущее время в миллисекундах
         deltaTime = (currentTime - previousTime) / 1000.0f;
 
         glm::vec3 viewPos(0.0f);
-
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
 
         if (keystate[SDL_SCANCODE_W]) viewPos.z += deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
@@ -152,7 +137,7 @@ int main(int argc, char* argv[]) {
         if (keystate[SDL_SCANCODE_SPACE]) viewPos.y += deltaTime * (keystate[SDL_SCANCODE_LSHIFT]+1);
 
         if (viewPos.x != 0 || viewPos.y != 0 || viewPos.z != 0)
-            re_window->camera.moveRelative(viewPos.x, viewPos.y, viewPos.z);
+            renderer->camera.moveRelative(viewPos.x, viewPos.y, viewPos.z);
 
         // Вывести FPS
         if (currentTime / 1000 - previousTime / 1000 >= 1) {
@@ -161,12 +146,10 @@ int main(int argc, char* argv[]) {
         }
         frames++;
         previousTime = currentTime;
-        re_window->Draw(currentTime);
-        SDL_GL_SwapWindow(sdl_window);
+        renderer->Draw(currentTime);
+        SDL_GL_SwapWindow(window);
     }
-    SDL_DestroyWindow(sdl_window);
-    SDL_Quit();
-    delete re_window;
+    destroyApp(window, glContext, renderer);
     DEBUG("Goodnight");
 
     return 0;
