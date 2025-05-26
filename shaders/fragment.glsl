@@ -5,8 +5,18 @@ in vec3 FragPos;
 
 out vec4 FragColor;
 
-struct Light {
+struct DirLight {
+    vec3 direction;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+struct PointLight {
     vec3 position;
+    float constant;
+    float linear;
+    float quadratic;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -18,10 +28,13 @@ struct Material {
     float shininess;
 };
 
+#define POINT_LIGHTS_MAX 8
+
 uniform bool distort;
 uniform float u_time;
 uniform vec3 u_camera_position;
-uniform Light light;
+uniform DirLight dirLight;
+uniform PointLight pointLights[POINT_LIGHTS_MAX];
 uniform Material material;
 
 vec3 random3(vec3 p) {
@@ -55,13 +68,45 @@ float perlin(vec3 p) {
     float frequency = 1.0;
     float amplitude = 1.0;
 
-    for(int i=0; i<4; i++) {
+    for(int i=0; i<POINT_LIGHTS_MAX; i++) {
         total += noise(p * frequency) * amplitude;
         frequency *= 2.0;
         amplitude *= 0.5;
     }
 
     return total;
+}
+
+vec3 getDirLight(vec3 norm, vec3 viewDir, vec2 ourUV) {
+    vec3 light_direction = normalize(-dirLight.direction);
+
+    vec3 ambient = dirLight.ambient * vec3(texture(material.diffuse, ourUV));
+
+    float diff = max(dot(norm, light_direction), 0.0);
+    vec3 diffuse = dirLight.diffuse * diff * vec3(texture(material.diffuse, ourUV));
+
+    vec3 reflectDir = reflect(-light_direction, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = dirLight.specular * spec * vec3(texture(material.specular, ourUV));
+
+    return ambient + diffuse + specular;
+}
+
+vec3 getPointLight(PointLight light, vec3 norm, vec3 viewDir, vec2 ourUV) {
+    vec3 light_direction = normalize(light.position - FragPos);
+
+    vec3 ambient = light.ambient * vec3(texture(material.diffuse, ourUV));
+
+    float diff = max(dot(norm, light_direction), 0.0);
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, ourUV));
+
+    vec3 reflectDir = reflect(-light_direction, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = light.specular * spec * vec3(texture(material.specular, ourUV));
+
+    float distance = length(light.position - FragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+    return (ambient + diffuse + specular) * attenuation;
 }
 
 void main() {
@@ -80,17 +125,12 @@ void main() {
         ourUV = TexCoord;
     }
 
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, ourUV));
-
     vec3 norm = normalize(Normal);
-    vec3 light_direction = normalize(light.position - FragPos);
-    float diff = max(dot(norm, light_direction), 0.0);
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, ourUV));
-
     vec3 viewDir = normalize(u_camera_position - FragPos);
-    vec3 reflectDir = reflect(-light_direction, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * (spec * vec3(texture(material.specular, ourUV)));
-
-    FragColor = vec4(ambient + diffuse + specular, 1.0);
+    vec3 dirLight = getDirLight(norm, viewDir, ourUV);
+    vec3 pointLight = vec3(0.0);
+    for (int i = 0; i < 4; i++) {
+        pointLight += getPointLight(pointLights[i], norm, viewDir, ourUV);
+    }
+    FragColor = vec4(dirLight + pointLight, 1.0);
 }

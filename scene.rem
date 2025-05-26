@@ -2,8 +2,15 @@
 /// Camera, x, y, z, rx, ry, rz, FOV ///
 camera,0,0,2,0,-90,0,60
 
-/// Lighting, sky r, g, b, ambient r, g, b, diffuse r, g, b, specular r, g, b, light x, y, z ///
-lighting,0.63,0.63,0.85,0.2,0.2,0.2,0.7,0.7,0.7,1,1,1,-2,3,4
+/// sky, r, g, b ///
+sky,0.63,0.63,0.85
+
+/// dirlight, direction x, y, z, ambient r, g, b, diffuse r, g, b, specular r, g, b ///
+dirlight,-1,-1,-1,0.2,0.2,0.2,0.8,0.8,0.8,1,1,1
+
+/// pointlight, position x, y, z, constant, linear, quadratic, ambient r, g, b, diffuse r, g, b, specular r, g, b ///
+pointlight,-2,3,4,1,0.5,0,0,0,0,1,0.8,0,1,0.8,0
+pointlight,-2,3,4,1,1,1,3,3,3,0,0,0,0,0,0
 
 /// Тип объекта (cube/sphere), x, y, z, rx, ry, rz, sx, sy, sz, степень блеска, искажение (true/false), путь к текстуре, карта отражений (опционально) ///
 
