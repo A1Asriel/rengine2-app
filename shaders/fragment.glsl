@@ -28,7 +28,7 @@ struct Material {
     float shininess;
 };
 
-#define POINT_LIGHTS_MAX 8
+#define POINT_LIGHTS_MAX 128
 
 uniform bool distort;
 uniform float u_time;
@@ -36,6 +36,7 @@ uniform vec3 u_camera_position;
 uniform DirLight dirLight;
 uniform PointLight pointLights[POINT_LIGHTS_MAX];
 uniform Material material;
+uniform int pointLightsCount;
 
 vec3 random3(vec3 p) {
     return fract(
@@ -68,7 +69,7 @@ float perlin(vec3 p) {
     float frequency = 1.0;
     float amplitude = 1.0;
 
-    for(int i=0; i<POINT_LIGHTS_MAX; i++) {
+    for(int i=0; i<pointLightsCount; i++) {
         total += noise(p * frequency) * amplitude;
         frequency *= 2.0;
         amplitude *= 0.5;
@@ -129,7 +130,7 @@ void main() {
     vec3 viewDir = normalize(u_camera_position - FragPos);
     vec3 dirLight = getDirLight(norm, viewDir, ourUV);
     vec3 pointLight = vec3(0.0);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < pointLightsCount; i++) {
         pointLight += getPointLight(pointLights[i], norm, viewDir, ourUV);
     }
     FragColor = vec4(dirLight + pointLight, 1.0);
