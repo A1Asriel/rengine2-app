@@ -15,17 +15,14 @@ endif()
 find_package(SDL2 REQUIRED)
 
 # Create application
-add_executable(rengine_app src/main.cpp)
+add_executable(rengine_app src/main.cpp src/SceneLoader.cpp)
 
 if(WIN32 OR MINGW)
+    target_include_directories(rengine_app PRIVATE "${SDL2_INCLUDE_DIR}")
     set_target_properties(rengine_app PROPERTIES LINK_FLAGS "-mconsole")
 endif()
 
-# Link libraries statically
 target_link_libraries(rengine_app
     PRIVATE
     REngine::rengine
-    SDL2::SDL2main
-    SDL2::SDL2-static
-    "-static-libgcc" "-static-libstdc++"
 )
