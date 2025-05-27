@@ -7,8 +7,8 @@
 
 #include "SceneLoader.h"
 
-const int W_WIDTH = 800;
-const int W_HEIGHT = 600;
+int W_WIDTH = 800;
+int W_HEIGHT = 600;
 const char* W_TITLE = "REngine";
 
 int main(int argc, char* argv[]) {
@@ -19,12 +19,14 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < argc - 1; i++) {
             if (std::string(argv[i]) == "-scene") {
                 scenePath = argv[i + 1];
-            }
-            else if (std::string(argv[i]) == "-v") {
+            } else if (std::string(argv[i]) == "-v") {
                 vertexPath = argv[i + 1];
-            }
-            else if (std::string(argv[i]) == "-f") {
+            } else if (std::string(argv[i]) == "-f") {
                 fragmentPath = argv[i + 1];
+            } else if (std::string(argv[i]) == "-w") {
+                W_WIDTH = std::stoi(argv[i + 1]);
+            } else if (std::string(argv[i]) == "-h") {
+                W_HEIGHT = std::stoi(argv[i + 1]);
             }
         }
     }
