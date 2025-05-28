@@ -31,11 +31,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        FATAL("SDL could not initialize! SDL_Error: " << SDL_GetError());
-        return -1;
-    }
-
     if (REngine::createWindow(W_TITLE, W_WIDTH, W_HEIGHT) != 0) {
         FATAL("Couldn't initialize window");
         return -1;
