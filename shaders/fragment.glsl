@@ -78,17 +78,27 @@ float perlin(vec3 p) {
     return total;
 }
 
+vec3 getAmbient(vec3 ambient, vec2 ourUV) {
+    return ambient * vec3(texture(material.diffuse, ourUV));
+}
+
+vec3 getDiffuse(vec3 diffuse, vec3 norm, vec3 light_direction, vec2 ourUV) {
+    float diff = max(dot(norm, light_direction), 0.0);
+    return diffuse * diff * vec3(texture(material.diffuse, ourUV));
+}
+
+vec3 getSpecular(vec3 specular, vec3 norm, vec3 viewDir, vec3 light_direction, vec2 ourUV) {
+    vec3 halfwayDir = normalize(light_direction + viewDir);
+    float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
+    return specular * spec * vec3(texture(material.specular, ourUV));
+}
+
 vec3 getDirLight(vec3 norm, vec3 viewDir, vec2 ourUV) {
     vec3 light_direction = normalize(-dirLight.direction);
 
-    vec3 ambient = dirLight.ambient * vec3(texture(material.diffuse, ourUV));
-
-    float diff = max(dot(norm, light_direction), 0.0);
-    vec3 diffuse = dirLight.diffuse * diff * vec3(texture(material.diffuse, ourUV));
-
-    vec3 reflectDir = reflect(-light_direction, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = dirLight.specular * spec * vec3(texture(material.specular, ourUV));
+    vec3 ambient = getAmbient(dirLight.ambient, ourUV);
+    vec3 diffuse = getDiffuse(dirLight.diffuse, norm, light_direction, ourUV);
+    vec3 specular = getSpecular(dirLight.specular, norm, viewDir, light_direction, ourUV);
 
     return ambient + diffuse + specular;
 }
@@ -96,14 +106,9 @@ vec3 getDirLight(vec3 norm, vec3 viewDir, vec2 ourUV) {
 vec3 getPointLight(PointLight light, vec3 norm, vec3 viewDir, vec2 ourUV) {
     vec3 light_direction = normalize(light.position - FragPos);
 
-    vec3 ambient = light.ambient * vec3(texture(material.diffuse, ourUV));
-
-    float diff = max(dot(norm, light_direction), 0.0);
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, ourUV));
-
-    vec3 reflectDir = reflect(-light_direction, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, ourUV));
+    vec3 ambient = getAmbient(light.ambient, ourUV);
+    vec3 diffuse = getDiffuse(light.diffuse, norm, light_direction, ourUV);
+    vec3 specular = getSpecular(light.specular, norm, viewDir, light_direction, ourUV);
 
     float distance = length(light.position - FragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
