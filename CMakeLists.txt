@@ -25,4 +25,5 @@ endif()
 target_link_libraries(rengine_app
     PRIVATE
     REngine::rengine
+    -static
 )

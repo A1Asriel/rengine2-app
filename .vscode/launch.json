@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/rengine_app",
-            "args": [],
+            "args": ["-v", "shaders/fragment.glsl", "-f", "shaders/fragment.glsl"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
