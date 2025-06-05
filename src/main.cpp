@@ -1,9 +1,11 @@
 #include <filesystem>
 #include <iostream>
 
-#include <Window.h>
+#include <Engine.h>
 #include <Logging.h>
 #include <InputHandler.h>
+
+#include <glad/glad.h>
 
 #include "SceneLoader.h"
 
@@ -42,8 +44,8 @@ int main(int argc, char* argv[]) {
         REngine::destroyWindow();
         return -1;
     }
-    REngine::renderer->setScene(&scene);
-    REngine::renderer->setShader(vertexPath, fragmentPath);
+    REngine::setScene(&scene);
+    REngine::setShader(vertexPath, fragmentPath);
 
     bool wireframeMode = false;
 
@@ -66,10 +68,10 @@ int main(int argc, char* argv[]) {
 
     // Обработка прокрутки колесика мыши
     REngine::InputHandler::setMouseWheelCallback([](int x, int y) {
-        float newFov = REngine::renderer->camera.fov + y;
-        if (newFov > 179)      REngine::renderer->camera.fov = 179;
-        else if (newFov < 1)   REngine::renderer->camera.fov = 1;
-        else                   REngine::renderer->camera.fov += y;
+        float newFov = REngine::getScene()->camera.fov + y;
+        if (newFov > 179)      REngine::getScene()->camera.fov = 179;
+        else if (newFov < 1)   REngine::getScene()->camera.fov = 1;
+        else                   REngine::getScene()->camera.fov += y;
     });
     
     try {

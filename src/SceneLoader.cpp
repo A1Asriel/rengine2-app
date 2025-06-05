@@ -47,10 +47,8 @@ bool SceneLoader::load(const std::string& file, REngine::Scene* scene) {
                 scene->camera.position.y = std::stof(tokens[2]);
                 scene->camera.position.z = std::stof(tokens[3]);
                 DEBUG("Loaded camera position: " << scene->camera.position.x << ", " << scene->camera.position.y << ", " << scene->camera.position.z);
-                scene->camera.rotation.x = std::stof(tokens[4]);
-                scene->camera.rotation.y = std::stof(tokens[5]);
-                scene->camera.rotation.z = std::stof(tokens[6]);
-                DEBUG("Loaded camera rotation: " << scene->camera.rotation.x << ", " << scene->camera.rotation.y << ", " << scene->camera.rotation.z);
+                scene->camera.setRotation(std::stof(tokens[4]), std::stof(tokens[5]), std::stof(tokens[6]));
+                DEBUG("Loaded camera rotation: " << scene->camera.getRotation().x << ", " << scene->camera.getRotation().y << ", " << scene->camera.getRotation().z);
                 scene->camera.fov = std::stof(tokens[7]);
                 DEBUG("Loaded camera fov: " << scene->camera.fov);
             } catch(const std::exception& e) {
