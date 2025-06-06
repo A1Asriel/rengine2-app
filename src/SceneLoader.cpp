@@ -6,8 +6,7 @@
 
 #include <Logging.h>
 #include <Texture.h>
-#include <CubeMesh.h>
-#include <SphereMesh.h>
+#include <Mesh.h>
 
 bool SceneLoader::load(const std::string& file, REngine::Scene* scene) {
     scene->nodes.clear();
@@ -138,9 +137,9 @@ bool SceneLoader::load(const std::string& file, REngine::Scene* scene) {
             }
             REngine::SceneNode node;
             if (tokens[0] == "cube")
-                node.mesh = (REngine::Mesh*)new REngine::CubeMesh();
+                node.mesh = new REngine::Mesh(REngine::Mesh::createCube());
             else if (tokens[0] == "sphere")
-                node.mesh = (REngine::Mesh*)new REngine::SphereMesh(40, 40);
+                node.mesh = new REngine::Mesh(REngine::Mesh::createSphere());
             else {
                 ERROR("Line \"" << line << "\" has incorrect mesh type");
                 continue;
