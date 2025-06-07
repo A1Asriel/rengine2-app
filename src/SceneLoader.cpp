@@ -145,6 +145,7 @@ bool SceneLoader::load(const std::string& file, REngine::Scene* scene) {
                 continue;
             }
             try {
+                node.mesh->computeAABB();
                 DEBUG("Loading node \"" << tokens[0] << "\"");
                 node.position.x = std::stof(tokens[1]);
                 node.position.y = std::stof(tokens[2]);
